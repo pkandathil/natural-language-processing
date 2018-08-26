@@ -85,8 +85,9 @@ def count_words(word_list):
   result = {}
   for line in word_list:
     if isinstance(line, list):
-      line = line[0]
-    words = line.split( )
+        words = line
+    else:
+        words = line.split( )
     for word in words:
       if(not word in result):
         result[word] = 0
@@ -184,13 +185,64 @@ def tfidf_features(X_train, X_val, X_test):
     # Transform the train, test, and val sets and return the result
     
 
-    tfidf_vectorizer = TfidfVectorizer (min_df=0.001, max_df=0.9, ngram_range=(1,2), token_pattern= '(\S+)')
-    X_train = tfidf_vectorizer.fit_transform(X_train)
-    X_val = tfidf_vectorizer.fit_transform(X_val)
-    X_test = tfidf_vectorizer.fit_transform(X_test)
+    tfidf_vectorizer = TfidfVectorizer (min_df=5, max_df=0.9, ngram_range=(1,2), token_pattern= '(\S+)')
+    tfidf_vectorizer = tfidf_vectorizer.fit(X_train)
+    X_train = tfidf_vectorizer.transform(X_train)
+    X_val = tfidf_vectorizer.transform(X_val)
+    X_test = tfidf_vectorizer.transform(X_test)
     
     return X_train, X_val, X_test, tfidf_vectorizer.vocabulary_
 
 X_train_tfidf, X_val_tfidf, X_test_tfidf, tfidf_vocab = tfidf_features(X_train, X_val, X_test)
+print('X_train_tfidf shape ', X_train_tfidf.shape)
+print('X_val_tfidf shape ', X_val_tfidf.shape)
+print('X_test_tfidf shape ', X_test_tfidf.shape)
 tfidf_reversed_vocab = {i:word for word,i in tfidf_vocab.items()}
 
+contains_c_sharp = False
+for word,i in tfidf_vocab.items():
+    if(word == 'c#'):
+        contains_c_sharp = True
+        break
+
+if(not contains_c_sharp):
+    print('------You have a problem with the vectorizer------')
+    exit()
+
+################################################################
+from sklearn.preprocessing import MultiLabelBinarizer
+mlb = MultiLabelBinarizer(classes=sorted(tags_counts.keys()))
+y_train = mlb.fit_transform(y_train)
+y_val = mlb.fit_transform(y_val)
+
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.linear_model import LogisticRegression, RidgeClassifier
+
+def train_classifier(X_train, y_train):
+    """
+      X_train, y_train — training data
+      
+      return: trained classifier
+    """
+    
+    return OneVsRestClassifier(LogisticRegression()).fit(X_train, y_train)
+
+classifier_mybag = train_classifier(X_train_mybag, y_train)
+classifier_tfidf = train_classifier(X_train_tfidf, y_train)
+#########################################################
+
+y_val_predicted_labels_mybag = classifier_mybag.predict(X_val_mybag)
+y_val_predicted_scores_mybag = classifier_mybag.decision_function(X_val_mybag)
+
+y_val_predicted_labels_tfidf = classifier_tfidf.predict(X_val_tfidf)
+y_val_predicted_scores_tfidf = classifier_tfidf.decision_function(X_val_tfidf)
+
+
+y_val_pred_inversed = mlb.inverse_transform(y_val_predicted_labels_tfidf)
+y_val_inversed = mlb.inverse_transform(y_val)
+for i in range(3):
+    print('Title:\t{}\nTrue labels:\t{}\nPredicted labels:\t{}\n\n'.format(
+        X_val[i],
+        ','.join(y_val_inversed[i]),
+        ','.join(y_val_pred_inversed[i])
+    ))
