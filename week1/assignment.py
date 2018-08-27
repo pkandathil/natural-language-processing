@@ -200,7 +200,7 @@ print('X_test_tfidf shape ', X_test_tfidf.shape)
 tfidf_reversed_vocab = {i:word for word,i in tfidf_vocab.items()}
 
 contains_c_sharp = False
-for word,i in tfidf_vocab.items():
+for word,i in tfidf_vocab.items():  
     if(word == 'c#'):
         contains_c_sharp = True
         break
@@ -246,3 +246,101 @@ for i in range(3):
         ','.join(y_val_inversed[i]),
         ','.join(y_val_pred_inversed[i])
     ))
+####################################################################################
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import f1_score
+from sklearn.metrics import roc_auc_score 
+from sklearn.metrics import average_precision_score
+from sklearn.metrics import recall_score
+
+def print_evaluation_scores(y_val, predicted, predicted_scores):
+    print('Accuracy Score: ', accuracy_score(y_val, predicted))
+    f1_score_macro = f1_score(y_true=y_val, y_pred=predicted, average='macro')
+    f1_score_micro = f1_score(y_true=y_val, y_pred=predicted, average='micro')
+    f1_score_weighted = f1_score(y_true=y_val, y_pred=predicted, average='weighted')
+    print('F1 score macro', f1_score_macro)
+    print('F1 score micro', f1_score_micro)
+    print('F1 score weighted', f1_score_weighted)
+    precision_score_macro = average_precision_score(y_true=y_val, y_score=predicted_scores, average='macro')
+    precision_score_micro = average_precision_score(y_true=y_val, y_score=predicted_scores, average='micro')
+    precision_score_weighted = average_precision_score(y_true=y_val, y_score=predicted_scores, average='weighted')
+    print('Precision score macro', precision_score_macro)
+    print('Precision score micro', precision_score_micro)
+    print('Precision score weighted', precision_score_weighted)
+
+print('Bag-of-words')
+print_evaluation_scores(y_val, y_val_predicted_labels_mybag, y_val_predicted_scores_mybag)
+print('Tfidf')
+print_evaluation_scores(y_val, y_val_predicted_labels_tfidf, y_val_predicted_scores_tfidf)
+
+# from metrics import roc_auc
+# %matplotlib inline
+
+# n_classes = len(tags_counts)
+# roc_auc(y_val, y_val_predicted_scores_mybag, n_classes)
+
+# n_classesn_class  = len(tags_counts)
+# roc_auc(y_val, y_val_predicted_scores_tfidf, n_classes)
+
+def train_classifier_new(X_train, y_train, penalty_type, coefficient):
+    """
+      X_train, y_train — training data
+      
+      return: trained classifier
+    """
+    
+    return OneVsRestClassifier(LogisticRegression(penalty=penalty_type, C=coefficient)).fit(X_train, y_train)
+
+# classifier_tfidf = train_classifier_new(X_train_tfidf, y_train, 'l1', 0.1)
+# y_val_predicted_labels_tfidf = classifier_tfidf.predict(X_val_tfidf)
+# y_val_predicted_scores_tfidf = classifier_tfidf.decision_function(X_val_tfidf)
+# print('Tfidf - l1 0.1')
+# print_evaluation_scores(y_val, y_val_predicted_labels_tfidf, y_val_predicted_scores_tfidf)
+
+# classifier_tfidf = train_classifier_new(X_train_tfidf, y_train, 'l1', 1)
+# y_val_predicted_labels_tfidf = classifier_tfidf.predict(X_val_tfidf)
+# y_val_predicted_scores_tfidf = classifier_tfidf.decision_function(X_val_tfidf)
+# print('Tfidf - l1 1')
+# print_evaluation_scores(y_val, y_val_predicted_labels_tfidf, y_val_predicted_scores_tfidf)
+
+# classifier_tfidf = train_classifier_new(X_train_tfidf, y_train, 'l1', 10)
+# y_val_predicted_labels_tfidf = classifier_tfidf.predict(X_val_tfidf)
+# y_val_predicted_scores_tfidf = classifier_tfidf.decision_function(X_val_tfidf)
+# print('Tfidf - l1 10')
+# print_evaluation_scores(y_val, y_val_predicted_labels_tfidf, y_val_predicted_scores_tfidf)
+
+# classifier_tfidf = train_classifier_new(X_train_tfidf, y_train, 'l1', 100)
+# y_val_predicted_labels_tfidf = classifier_tfidf.predict(X_val_tfidf)
+# y_val_predicted_scores_tfidf = classifier_tfidf.decision_function(X_val_tfidf)
+# print('Tfidf - l1 100')
+# print_evaluation_scores(y_val, y_val_predicted_labels_tfidf, y_val_predicted_scores_tfidf)
+
+# classifier_tfidf = train_classifier_new(X_train_tfidf, y_train, 'l2', 0.1)
+# y_val_predicted_labels_tfidf = classifier_tfidf.predict(X_val_tfidf)
+# y_val_predicted_scores_tfidf = classifier_tfidf.decision_function(X_val_tfidf)
+# print('Tfidf - l2 0.1')
+# print_evaluation_scores(y_val, y_val_predicted_labels_tfidf, y_val_predicted_scores_tfidf)
+
+# classifier_tfidf = train_classifier_new(X_train_tfidf, y_train, 'l2', 1)
+# y_val_predicted_labels_tfidf = classifier_tfidf.predict(X_val_tfidf)
+# y_val_predicted_scores_tfidf = classifier_tfidf.decision_function(X_val_tfidf)
+# print('Tfidf - l2 1')
+# print_evaluation_scores(y_val, y_val_predicted_labels_tfidf, y_val_predicted_scores_tfidf)
+
+classifier_tfidf = train_classifier_new(X_train_tfidf, y_train, 'l2', 10)
+y_val_predicted_labels_tfidf = classifier_tfidf.predict(X_val_tfidf)
+y_val_predicted_scores_tfidf = classifier_tfidf.decision_function(X_val_tfidf)
+print('Tfidf - l2 10')
+print_evaluation_scores(y_val, y_val_predicted_labels_tfidf, y_val_predicted_scores_tfidf)
+
+# classifier_tfidf = train_classifier_new(X_train_tfidf, y_train, 'l2', 100)
+# y_val_predicted_labels_tfidf = classifier_tfidf.predict(X_val_tfidf)
+# y_val_predicted_scores_tfidf = classifier_tfidf.decision_function(X_val_tfidf)
+# print('Tfidf - l2 100')
+# print_evaluation_scores(y_val, y_val_predicted_labels_tfidf, y_val_predicted_scores_tfidf)
+
+test_predictions = classifier_tfidf.predict(X_test_tfidf)
+test_pred_inversed = mlb.inverse_transform(test_predictions)
+test_predictions_for_submission = '\n'.join('%i\t%s' % (i, ','.join(row)) for i, row in enumerate(test_pred_inversed))
+grader.submit_tag('MultilabelClassification', test_predictions_for_submission)
+##################################################
