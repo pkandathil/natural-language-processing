@@ -344,3 +344,74 @@ test_pred_inversed = mlb.inverse_transform(test_predictions)
 test_predictions_for_submission = '\n'.join('%i\t%s' % (i, ','.join(row)) for i, row in enumerate(test_pred_inversed))
 grader.submit_tag('MultilabelClassification', test_predictions_for_submission)
 ##################################################
+
+import numpy as np
+
+def find_element_in_list(list_of_items, item): 
+    index = -1
+    for item_index, list_item in enumerate(list_of_items):
+        if(item == list_item):
+            index = item_index
+            break
+    return index
+
+def print_words_for_tag(classifier, tag, tags_classes, index_to_words, all_words):
+    """
+        classifier: trained classifier
+        tag: particular tag
+        tags_classes: a list of classes names from MultiLabelBinarizer
+        index_to_words: index_to_words transformation
+        all_words: all words in the dictionary
+        
+        return nothing, just print top 5 positive and top 5 negative words for current tag
+    """
+    print('Tag:\t{}'.format(tag))
+
+    
+    # Extract an estimator from the classifier for the given tag.
+    # Extract feature coefficients from the estimator. 
+    
+    ######################################
+    ######### YOUR CODE HERE #############
+    ######################################
+    index_of_estimator = find_element_in_list(tags_classes, tag)
+    tag_estimator = classifier.estimators_[index_of_estimator]
+    tag_coefficients = tag_estimator.coef_[0]
+    sorted_coefficients = sorted(tag_coefficients, reverse=True)
+    
+    highest_coefficients = sorted_coefficients[:5]
+    lowest_coefficients = sorted_coefficients[-5:]
+
+    print('-----done------')
+    print(highest_coefficients)
+    print(lowest_coefficients)
+    print('--------')
+
+    top_words = []
+
+    for coeff in highest_coefficients:
+        index_of_coeff = find_element_in_list(tag_coefficients, coeff)
+        top_words.append(index_to_words[index_of_coeff])
+    
+    bottom_words = []
+
+    for coeff in lowest_coefficients:
+        index_of_coeff = find_element_in_list(tag_coefficients, coeff)
+        bottom_words.append(index_to_words[index_of_coeff])
+
+    
+    
+    top_positive_words = top_words # top-5 words sorted by the coefficiens.
+    top_negative_words = bottom_words # bottom-5 words  sorted by the coefficients.
+    print('Top positive words:\t{}'.format(', '.join(top_positive_words)))
+    print('Top negative words:\t{}\n'.format(', '.join(top_negative_words)))
+
+print_words_for_tag(classifier_tfidf, 'c', mlb.classes, tfidf_reversed_vocab, ALL_WORDS)
+print_words_for_tag(classifier_tfidf, 'c++', mlb.classes, tfidf_reversed_vocab, ALL_WORDS)
+print_words_for_tag(classifier_tfidf, 'linux', mlb.classes, tfidf_reversed_vocab, ALL_WORDS)
+
+grader.status()
+STUDENT_EMAIL = 'prashantgeorge36@gmail.com' 
+STUDENT_TOKEN = 'vI6Ckl6fHsF2AZPe' 
+grader.status()
+grader.submit(STUDENT_EMAIL, STUDENT_TOKEN)
